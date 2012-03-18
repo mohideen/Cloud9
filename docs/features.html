@@ -8,10 +8,10 @@
     <meta name="author" content="">
 
     <!-- Le styles -->
-    <link href="docs/assets/css/bootstrap.css" rel="stylesheet">
-    <link href="docs/assets/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="docs/assets/css/docs.css" rel="stylesheet">
-    <link href="docs/assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -20,11 +20,7 @@
 
   </head>
 
-  <body style="background-image: url(docs/assets/img/grid-18px-masked.png)" data-spy="scroll" data-target=".subnav" data-offset="50">
-
-
-  <!-- Navbar
-    ================================================== -->
+  <body>
 
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -34,17 +30,17 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="./index.html">Cloud<sup>9</sup></a>
+          <a class="brand" href="../index.html">Cloud<sup>9</sup></a>
           <div class="nav-collapse">
             <ul class="nav">
+              <li class="">
+                <a href="../index.html">Home</a>
+              </li>
               <li class="active">
-                <a href="./index.html">Home</a>
+                <a href="features.html">Features</a>
               </li>
               <li class="">
-                <a href="docs/features.html">Features</a>
-              </li>
-              <li class="">
-                <a href="docs/api/index.html">API</a>
+                <a href="api/index.html">API</a>
               </li>
             </ul>
           </div>
@@ -54,20 +50,65 @@
 
     <div class="container">
 
-<!-- Masthead
-================================================== -->
-<header class="jumbotron subhead" id="overview" style="padding-top: 30px;">
-  <h1><small>edu.umd.</small>Cloud<sup>9</sup></h1>
-  <p class="lead">Support for Data-Intensive Algorithms in Hadoop</p>
+  <div class="page-header">
+    <h1>Features</h1>
+  </div>
 
-</header>
+<h2>Working with Document Collections</h2>
 
-<section id="material">
- <p>
-<a href="https://github.com/lintool/Mr.LDA" class="btn btn-info btn-large">Fork me on Github!</a>
-</p>
-</section>
+<p>Cloud<sup><small>9</small></sup> provides code to working
+with many text collections commonly used in research:</p>
 
+<ul>
+
+  <li><a href="docs/content/clue.html">Guide to working on the ClueWeb09
+  collection</a></li>
+
+  <li><a href="docs/content/clue-access.html">Random access to ClueWeb09
+  WARC records</a></li>
+
+  <li><a href="docs/content/wikipedia.html">Guide to working with Wikipedia</a></li>
+
+  <li><a href="docs/content/collections.html">Guide to working with standard document collections</a></li>
+
+</ul>
+
+
+<h2>Reference Implementations</h2>
+
+<p>Cloud<sup><small>9</small></sup> provides reference implementations
+of many design patterns and algorithms introduced in the
+book <a href="http://mapreduce.me">Data-Intensive Text Processing with
+MapReduce</a>. Some of these examples are exercises that have been
+previously used in MapReduce courses taught at the University of
+Maryland.</p>
+
+<ul>
+
+  <li><a href="exercise-bigrams.html">Bigram counts</a> [<a href="bigrams-solutions.html">solutions</a>]</li>
+
+  <li><a href="indexing.html">Inverted indexing</a> [<a href="indexing-solutions.html">solutions</a>]</li>
+
+  <li><a href="retrieval.html">Boolean retrieval</a> [<a href="retrieval-solutions.html">solutions</a>]</li>
+
+  <li><a href="pagerank.html">PageRank</a>  [<a href="pagerank-solutions.html">solutions</a>]</li>
+
+</ul>
+
+<p>Other MapReduce algorithms and design patterns are discussed
+below:</p>
+
+<ul>
+
+  <li><a href="order-inversion.html">Order inversion</a> design pattern for computing relative frequencies (Chapter 3)</li>
+  <li><a href="pairs-stripes.html">Pairs and stripes</a> design pattern for computing term co-occurrences (Chapter 3)</li>
+  <li><a href="bfs.html">Parallel breadth-first search</a> (Chapter 5)</li>
+  <li><a href="pagerank.html">PageRank</a> and design patterns for efficient graph algorithms (partially covered in Chapter 5)</li>
+
+</ul>
+
+
+    </div> <!-- /container -->
 
     <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/jquery.js"></script>

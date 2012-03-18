@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Mr.LDA: Flexible, Large-Scale Topic Modeling using Variational Inference in MapReduce</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../index.html">Cloud<sup>9</sup></a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="">
+                <a href="../index.html">Home</a>
+              </li>
+              <li class="">
+                <a href="docs/overview.html">API</a>
+              </li>
+              <li class="active">
+                <a href="./examples.html">Examples</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+  <div class="page-header">
+    <h1><small>Examples  &#187;</small> Bigram Exercise </h1>
+  </div>
+
+<p>This exercise is a simple extension of the word count demo: in the
+first part of the exercise, you'll be counting bigrams, and in the
+second part of the exercise, you'll be computing bigram relative
+frequencies. For both parts, feel free to use Hadoop data types in
+Cloud<sup><small>9</small></sup> if you think it's helpful.  You'll
+want to look in the edu.umd.cloud9.io package.</p>
+
+<h2>Part I: Count the bigrams</h2>
+
+<p>Take the word count example
+<code>edu.umd.cloud9.demo.DemoWordCount</code> and extend it to count
+bigrams.  <a href="http://en.wikipedia.org/wiki/Bigram">Bigrams</a>
+are simply sequences of two consecutive words.  For example, the
+previous sentence contains the following bigrams: "Bigrams are", "are
+simply", "simply sequences", "sequence of", etc.</p>
+
+<p>Work with the sample collection included in
+Cloud<sup><small>9</small></sup>, <a href="../../data/bible+shakes.nopunc.gz">the
+Bible and the complete works of Shakespeare</a>.  Don't worry about
+doing anything fancy in terms of tokenization; it's fine to continue
+using Java's StringTokenizer.</p>
+
+<p>Questions to answer:</p>
+
+<ol>
+
+  <li>How many unique bigrams are there?</li>
+
+  <li>List the top ten most frequent bigrams and their counts.</li>
+
+  <li>What fraction of all bigrams occurrences does the top ten
+  bigrams account for?  That is, what is the cumulative frequency of
+  the top ten bigrams?</li>
+
+  <li>How many bigrams appear only once?</li>
+
+</ol>
+
+<h2>Part II: From bigram counts to relative frequencies</h2>
+
+<p>Extend your program to compute bigram relative frequencies, i.e.,
+how likely you are to observe a word given the preceding word.  The
+output of the code should be a table of values for
+F(W<sub><small>n</small></sub>|W<sub><small>n-1</small></sub>).
+To compute F(B|A), count up the number of occurrences of the
+bigram "A B", and then divide by the number of occurrences of all the
+bigrams that start with "A".</p>
+
+<p>Questions to answer:</p>
+
+<ol>
+
+  <li>What are the five most frequent words following the word
+  "light"?  What is the frequency of observing each word?</li>
+
+  <li>Same question, except for the word "contain".</li>
+
+  <li>If there are a total of <i>N</i> words in your vocabulary, then
+  there are a total of <i>N<sup><small>2</small></sup></i> possible
+  values for
+  F(W<sub><small>n</small></sub>|W<sub><small>n-1</small></sub>)&mdash;in
+  theory, every word can follow every other word (including itself).
+  What fraction of these values are non-zero?  In other words, what
+  proportion of all possible events are actually observed?  To give a
+  concrete example, let's say that following the word "happy", you
+  only observe 100 different words in the text collection.  This means
+  that <i>N</i>-100 words are never seen after "happy" (perhaps the
+  distribution of happiness is quite limited?).</li>
+
+</ol>
+
+<h2>Practical Tips</h2>
+
+<p>The easiest way to get started is to write a new class directly
+inside the Cloud<sup><small>9</small></sup> project in Eclipse.  Once
+you have some code you want to run, pull up a shell, go to the base
+directory of the project, and type the following command:</p>
+
+<pre>
+ant
+</pre>
+
+<p>Ant should build <code>cloud9.jar</code>, which you can then use to
+run in standalone mode or on a cluster.</p>
+
+<h2>Solutions</h2>
+
+<p>When you're ready, the solutions to this
+exercise <a href="bigrams-solutions.html">are located here</a>.</p>
+
+
+    </div> <!-- /container -->
+
+    <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/jquery.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/google-code-prettify/prettify.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-alert.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tab.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-button.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-carousel.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-typeahead.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/application.js"></script>
+
+  </body>
+</html>
