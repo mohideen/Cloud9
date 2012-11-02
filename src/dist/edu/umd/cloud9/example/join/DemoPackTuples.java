@@ -1,5 +1,5 @@
 /*
- * Cloud9: A MapReduce Library for Hadoop
+  * Cloud9: A MapReduce Library for Hadoop
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.File;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,7 +39,10 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
  * <p>
  * Demo that packs the text datasets into a SequenceFile as {@link Tuple}
  * objects with complex internal structure. The records are stored in a local
- * SequenceFile; this file can used as an input to {@link DemoReduceSideJoin}.
+ * SequenceFile; this file can used as an input to {@link DemoReduceSideJoin}. 
+ * The input can be a file or a folder. If the input is a folder, the program
+ * will read each file in the folder. (The '_logs' and '_SUCCESS' files will 
+ * be neglected.)
  * </p>
  * 
  * <p>
@@ -82,13 +86,15 @@ public class DemoPackTuples {
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length != 2) {
-			System.out.println("usage: [input] [output]");
+			System.out.println("usage: [input-file/folder-name] [output] ");
 			System.exit(-1);
 		}
 
 		String infile = args[0];
 		String outfile = args[1];
-
+	
+		File input = new File(infile);
+    String inputFiles[];
 		sLogger.info("input: " + infile);
 		sLogger.info("output: " + outfile);
 
@@ -97,33 +103,52 @@ public class DemoPackTuples {
 		SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
 				LongWritable.class, Tuple.class);
 
-		// read in raw text records, line separated
-		BufferedReader data = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
-
+		
 		LongWritable l = new LongWritable();
 		long cnt = 0;
 		long joinKey;
 		
 		String line;
 		
-		while ((line = data.readLine()) != null) {
-			ArrayListWritable<Text> tokens = new ArrayListWritable<Text>();
-			StringTokenizer itr = new StringTokenizer(line);
-			joinKey = Long.parseLong(itr.nextToken());
-			while (itr.hasMoreTokens()) {
-				tokens.add(new Text(itr.nextToken()));
-			}
-
-			//Set the tuple data fields.
-			tuple.set("tupleId", cnt + 1);
-			tuple.set("columns", tokens);
-			l.set(joinKey);
-			// write the record
-			writer.append(l, tuple);
-			cnt++;
+		if(input.isDirectory()) {
+		  inputFiles = input.list();
+		  if(infile.endsWith("/")) {
+		    infile = infile.substring(0, infile.length() -1);
+		  }
+		} else {
+		  inputFiles = new String[1];
+		  inputFiles[0] = infile;
 		}
-
-		data.close();
+		for(String file : inputFiles) {
+		  if(input.isDirectory()) {
+		    //Skip non-data files genrated by hadoop in the input directory
+		    if(file.equals("_logs") || file.equals("_SUCCESS")) {
+		      continue;
+		    }
+		    file = infile + '/' + file;
+	    } 
+		  // read in raw text records, line separated
+      BufferedReader data = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+  
+  		while ((line = data.readLine()) != null) {
+  			ArrayListWritable<Text> tokens = new ArrayListWritable<Text>();
+  			StringTokenizer itr = new StringTokenizer(line);
+  			joinKey = Long.parseLong(itr.nextToken());
+  			while (itr.hasMoreTokens()) {
+  				tokens.add(new Text(itr.nextToken()));
+  			}
+  
+  			//Set the tuple data fields.
+  			tuple.set("tupleId", cnt + 1);
+  			tuple.set("columns", tokens);
+  			l.set(joinKey);
+  			// write the record
+  			writer.append(l, tuple);
+  			cnt++;
+  		}
+  		data.close();
+  		sLogger.info("Finished processing " + file + " file.");
+		}
 		writer.close();
 		
 		sLogger.info("Wrote " + cnt + " records.");
