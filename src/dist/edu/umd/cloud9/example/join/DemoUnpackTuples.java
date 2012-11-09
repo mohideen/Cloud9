@@ -38,8 +38,11 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 /**
  * <p>
  * Demo that unpacks the tuples from a SequenceFile into a flat text file. 
- * The output of {@link DemoReduceSideJoin} can be used as the input to this
- * program.
+ * Both input and output are accessed from the HDFS; The output of 
+ * {@link DemoReduceSideJoin} can be used as the input to this  program. 
+ * The input can be a file or a folder. If the input is a folder, the program
+ * will read each file in the folder. (The '_logs' and '_SUCCESS' files will 
+ * be neglected. All sub-directores will be omitted as well)
  * </p>
  * 
  * <p>
