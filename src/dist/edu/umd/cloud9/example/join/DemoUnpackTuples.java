@@ -16,16 +16,16 @@
 
 package edu.umd.cloud9.example.join;
 
+
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -60,7 +60,7 @@ public class DemoUnpackTuples {
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length != 2) {
-			System.out.println("usage: [input] [output]");
+			System.out.println("usage: [input-file/folder/name] [output]");
 			System.exit(-1);
 		}
 
@@ -72,24 +72,54 @@ public class DemoUnpackTuples {
 
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
-		Reader reader = new Reader(fs, new Path(infile), conf);
-		Writable key = (Writable) ReflectionUtils.newInstance(reader.getKeyClass(), conf);
-		Writable value = (Writable) ReflectionUtils.newInstance(reader.getValueClass(), conf);
+		FileStatus input = fs.getFileStatus(new Path(infile));
 		
-		BufferedWriter data = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outfile)));
+		
+		DataOutputStream os = new DataOutputStream(fs.create(new Path(outfile)));
+		BufferedWriter data = new BufferedWriter(new OutputStreamWriter(os));
+		
 		
 		long cnt = 0;
+    FileStatus[] inputFiles;
+    
+		if(input.isDir()) {
+      //Get hdfs status objects of all files in the input folder
+      inputFiles = fs.listStatus(new Path(infile));
+    } else {
+      //If input is a file, add it as the only element of files list
+      inputFiles = new FileStatus[1];
+      inputFiles[0] = input;
+    }
 		
-		String line;
-		while(reader.next(key, value)) {
-			line = ((ArrayListWritable<Text>)((Tuple)key).get(0)).toString();
-			data.write(line + "\n");
-			cnt++;
-		}
-		
-		data.close();
-		reader.close();
-		
-		sLogger.info("Wrote " + cnt + " records.");
+    for(FileStatus file : inputFiles) {
+      if(input.isDir()) {
+        //Skip non-data files genrated by hadoop in the input directory
+        if(file.getPath().toUri().getPath().endsWith("_logs") || 
+            file.getPath().toUri().getPath().endsWith("_SUCCESS") ||
+            file.isDir()) {
+          continue;
+        }
+      } 
+      // read joined sequential file, line separated
+
+      Reader reader = new Reader(fs, file.getPath(), conf);
+      Writable key = (Writable) ReflectionUtils.newInstance(reader.getKeyClass(), conf);
+      Writable value = (Writable) ReflectionUtils.newInstance(reader.getValueClass(), conf);
+      
+      
+  		String line;
+  		while(reader.next(key, value)) {
+  			line = ((ArrayListWritable<Text>)((Tuple)key).get(0)).toString();
+  			data.write(line + "\n");
+  			cnt++;
+  		}
+  		
+  		data.close();
+  		reader.close();
+
+      sLogger.info("Completed processing: " + file.getPath().toUri().getPath());
+    }
+
+    sLogger.info("Wrote " + cnt + " records.");
 	}
 }

@@ -17,14 +17,14 @@
 package edu.umd.cloud9.example.join;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.File;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
@@ -38,11 +38,11 @@ import edu.umd.cloud9.io.array.ArrayListWritable;
 /**
  * <p>
  * Demo that packs the text datasets into a SequenceFile as {@link Tuple}
- * objects with complex internal structure. The records are stored in a local
- * SequenceFile; this file can used as an input to {@link DemoReduceSideJoin}. 
+ * objects with complex internal structure. Both input and output are accessed
+ * from the HDFS; this file can used as an input to {@link DemoReduceSideJoin}. 
  * The input can be a file or a folder. If the input is a folder, the program
  * will read each file in the folder. (The '_logs' and '_SUCCESS' files will 
- * be neglected.)
+ * be neglected. All sub-directores will be omitted as well)
  * </p>
  * 
  * <p>
@@ -92,15 +92,15 @@ public class DemoPackTuples {
 
 		String infile = args[0];
 		String outfile = args[1];
-	
-		File input = new File(infile);
-    String inputFiles[];
+	  
+		//hdfs status of the input file
 		sLogger.info("input: " + infile);
 		sLogger.info("output: " + outfile);
 
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
-		SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
+		FileStatus input = fs.getFileStatus(new Path(infile));
+    SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
 				LongWritable.class, Tuple.class);
 
 		
@@ -109,26 +109,28 @@ public class DemoPackTuples {
 		long joinKey;
 		
 		String line;
-		
-		if(input.isDirectory()) {
-		  inputFiles = input.list();
-		  if(infile.endsWith("/")) {
-		    infile = infile.substring(0, infile.length() -1);
-		  }
+		FileStatus[] inputFiles;
+    
+		if(input.isDir()) {
+		  //Get hdfs status objects of all files in the input folder
+		  inputFiles = fs.listStatus(new Path(infile));
 		} else {
-		  inputFiles = new String[1];
-		  inputFiles[0] = infile;
+		  //If input is a file, add it as the only element of files list
+		  inputFiles = new FileStatus[1];
+		  inputFiles[0] = input;
 		}
-		for(String file : inputFiles) {
-		  if(input.isDirectory()) {
+		for(FileStatus file : inputFiles) {
+		  if(input.isDir()) {
 		    //Skip non-data files genrated by hadoop in the input directory
-		    if(file.equals("_logs") || file.equals("_SUCCESS")) {
+		    if(file.getPath().toUri().getPath().endsWith("_logs") || 
+		        file.getPath().toUri().getPath().endsWith("_SUCCESS") ||
+		        file.isDir()) {
 		      continue;
 		    }
-		    file = infile + '/' + file;
 	    } 
 		  // read in raw text records, line separated
-      BufferedReader data = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+		  DataInputStream d = new DataInputStream(fs.open(file.getPath()));
+      BufferedReader data = new BufferedReader(new InputStreamReader(d));
   
   		while ((line = data.readLine()) != null) {
   			ArrayListWritable<Text> tokens = new ArrayListWritable<Text>();
@@ -147,7 +149,8 @@ public class DemoPackTuples {
   			cnt++;
   		}
   		data.close();
-  		sLogger.info("Finished processing " + file + " file.");
+  		sLogger.info("Finished processing " + 
+  		    file.getPath().toUri().getPath() + " file.");
 		}
 		writer.close();
 		
