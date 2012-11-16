@@ -259,7 +259,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 	}
 	
 	public int run(String[] args) throws Exception {
-		if (args.length != 4 || args.length != 5) {
+		if (args.length != 4 && args.length != 5) {
 			printUsage();
 			return -1;
 		}
@@ -306,6 +306,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		
 		if(rawComparatorMode) {
 		  job.setSortComparatorClass(PairOfLongIntComparator.class);
+		  sLogger.info("Raw Comparator mode enabled!");
 		}
 		// Delete the output directory if it exists already
 		FileSystem.get(conf).delete(outputDir, true);
