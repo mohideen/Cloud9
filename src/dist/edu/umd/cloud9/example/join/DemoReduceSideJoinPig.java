@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Objects;
+import java.lang.Object;
 
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
@@ -37,6 +37,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.RawComparator;
+import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
@@ -64,6 +66,7 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
  * <li>[input-path1] input dataset two path</li>
  * <li>[output-path] output path</li>
  * <li>[num-reducers] number of reducers</li>
+ * <li>Optional: -RC - flag to set RawComparator</li>
  * </ul>
  * 
  * <p>
@@ -183,7 +186,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 					//corresponding rows from dataset one with same join key
 					if(!setOneBuffer.isEmpty()) {
 						for(Iterator<BinSedesTuple> i = setOneBuffer.iterator(); i.hasNext(); ) {
-						  combinedFields = new ArrayList<Objects>();
+						  combinedFields = new ArrayList<Object>();
 							
 							//Add columns of the row from dataset one to the combined list
 						  combinedFields.addAll(i.next().getAll());
@@ -211,17 +214,52 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		}
 	}
 	
+	public static class PairOfLongIntComparator extends WritableComparator {
+	  protected PairOfLongIntComparator() {
+	    super(PairOfLongInt.class);
+	  }
+	  
+	  @Override
+	  public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
+	    long lp1 = readLong(b1, s1);
+	    long lp2 = readLong(b2, s2);
+	    
+	    int comp = 0;
+	    if(lp1 < lp2) {
+	      comp = -1;
+	    } 
+	    if(lp1 > lp2) {
+	      comp = 1;
+	    }
+	    if(0 != comp)
+	      return comp;
+	    
+	    int ip1 = readInt(b1, s1+8);
+	    int ip2 = readInt(b2, s2+8);
+	    if(ip1 < ip2) {
+        comp = -1;
+      } 
+      if(ip1 > ip2) {
+        comp = 1;
+      }
+	    
+	    return comp;
+	  }
+	}
+
+	
 	public DemoReduceSideJoinPig() {
 	}
 	
 	private static int printUsage() {
-		System.out.println("usage: [input-path1] [input-path2] [output-path] [num-reducers]");
+    System.out.println("usage: [input-path1] [input-path2] [output-path] [num-reducers]");
+    System.out.println("usage (withRawComparator): [input-path1] [input-path2] [output-path] [num-reducers] -RC");
 		ToolRunner.printGenericCommandUsage(System.out);
 		return -1;
 	}
 	
 	public int run(String[] args) throws Exception {
-		if (args.length != 4) {
+		if (args.length != 4 || args.length != 5) {
 			printUsage();
 			return -1;
 		}
@@ -230,6 +268,10 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		String inputPath2 = args[1];
 		String outputPath = args[2];
 		int numReduceTasks = Integer.parseInt(args[3]);
+		boolean rawComparatorMode = false;
+		if(args.length == 5 && args[4].equals("-RC")) {
+		  rawComparatorMode = true;
+		}
 
 		sLogger.info("Tool: DemoReduceSideJoinPig");
 		sLogger.info(" - input path1: " + inputPath1);
@@ -237,7 +279,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		sLogger.info(" - output path: " + outputPath);
 		sLogger.info(" - number of reducers: " + numReduceTasks);
 
-		Configuration conf = new Configuration();
+		Configuration conf = getConf();
 		Job job = new Job(conf, "DemoReduceSideJoinPig");
 		job.setJarByClass(DemoReduceSideJoinPig.class);
 		job.setNumReduceTasks(numReduceTasks);
@@ -259,8 +301,12 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		job.setMapOutputValueClass(BinSedesTuple.class);
 
 		job.setReducerClass(JoinReduceClass.class);
+		
 		job.setPartitionerClass(JoinPartitionClass.class);
-
+		
+		if(rawComparatorMode) {
+		  job.setSortComparatorClass(PairOfLongIntComparator.class);
+		}
 		// Delete the output directory if it exists already
 		FileSystem.get(conf).delete(outputDir, true);
 
