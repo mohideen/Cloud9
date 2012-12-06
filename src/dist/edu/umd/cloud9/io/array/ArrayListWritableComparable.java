@@ -23,13 +23,10 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.io.WritableComparable;
 
-import edu.umd.cloud9.io.Tuple;
-
 /**
  * <p>
  * WritableComparable extension of a Java ArrayList. Elements in the list must be homogeneous and
- * must implement Hadoop's WritableComparable interface. This class, combined with {@link Tuple},
- * allows the user to define arbitrarily complex data structures.
+ * must implement Hadoop's WritableComparable interface.
  * </p>
  *
  * @param <E> type of list element
@@ -37,7 +34,7 @@ import edu.umd.cloud9.io.Tuple;
  * @author Jimmy Lin
  * @author Tamer Elsayed
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ArrayListWritableComparable<E extends WritableComparable> extends ArrayList<E>
     implements WritableComparable<ArrayListWritableComparable<E>> {
 
@@ -72,7 +69,7 @@ public class ArrayListWritableComparable<E extends WritableComparable> extends A
     String className = in.readUTF();
     E obj;
     try {
-      Class c = Class.forName(className);
+      Class<E> c = (Class<E>) Class.forName(className);
       for (int i = 0; i < numFields; i++) {
         obj = (E) c.newInstance();
         obj.readFields(in);
@@ -136,8 +133,8 @@ public class ArrayListWritableComparable<E extends WritableComparable> extends A
       if (i >= that.size())
         return 1;
 
-      Comparable<E> thisField = this.get(i);
-      Comparable<E> thatField = that.get(i);
+      Comparable<E> thisField = (Comparable<E>) this.get(i);
+      Comparable<E> thatField = (Comparable<E>) that.get(i);
 
       if (thisField.equals(thatField)) {
         // if we're down to the last field, sort shorter list first

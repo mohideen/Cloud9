@@ -17,7 +17,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import edu.umd.cloud9.collection.DocnoMapping;
-import edu.umd.cloud9.collection.trec.DemoCountTrecDocuments;
+import edu.umd.cloud9.collection.trec.CountTrecDocuments;
 import edu.umd.cloud9.collection.trec.TrecDocnoMapping;
 import edu.umd.cloud9.collection.trec.TrecDocnoMappingBuilder;
 import edu.umd.cloud9.collection.trec.TrecForwardIndex;
@@ -42,7 +42,8 @@ public class IntegrationTest {
 
     List<String> jars = Lists.newArrayList();
     jars.add(IntegrationUtils.getJar("dist", "cloud9"));
-    jars.add(IntegrationUtils.getJar("lib", "guava"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-13"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-r09-jarjar"));
 
     String libjars = String.format("-libjars=%s", Joiner.on(",").join(jars));
 
@@ -70,12 +71,13 @@ public class IntegrationTest {
 
     List<String> jars = Lists.newArrayList();
     jars.add(IntegrationUtils.getJar("dist", "cloud9"));
-    jars.add(IntegrationUtils.getJar("lib", "guava"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-13"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-r09-jarjar"));
 
     String libjars = String.format("-libjars=%s", Joiner.on(",").join(jars));
 
     String output = tmpPrefix + "-cnt";
-    DemoCountTrecDocuments.main(new String[] { libjars,
+    CountTrecDocuments.main(new String[] { libjars,
         IntegrationUtils.D_JT, IntegrationUtils.D_NN,
         "-collection=" + collectionPath,
         "-output=" + output,
@@ -91,7 +93,8 @@ public class IntegrationTest {
 
     List<String> jars = Lists.newArrayList();
     jars.add(IntegrationUtils.getJar("dist", "cloud9"));
-    jars.add(IntegrationUtils.getJar("lib", "guava"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-13"));
+    jars.add(IntegrationUtils.getJar("lib", "guava-r09-jarjar"));
 
     String libjars = String.format("-libjars=%s", Joiner.on(",").join(jars));
 

@@ -1,11 +1,11 @@
 /*
  * Cloud9: A MapReduce Library for Hadoop
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may
  * obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0 
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,81 +27,59 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.log4j.Logger;
-
-import edu.umd.cloud9.io.Schema;
-import edu.umd.cloud9.io.Tuple;
+import org.apache.pig.data.BinSedesTuple;
+import org.apache.pig.data.TupleFactory;
 
 /**
- * <p>
- * Demo that packs the sample collection into a SequenceFile as {@link Tuple}
- * objects. The records are stored in a local SequenceFile; this file can then
- * be transfered over to HDFS to serve as the input to
- * {@link DemoWordCountTuple1}.
- * </p>
- * 
- * <p>
- * Each record is a tuple; the first field of the tuple is a String with the
- * field name "text", which consists of the raw text of the record.
- * </p>
- * 
- * @see DemoPackTuples2
- * @see DemoPackJSON
+ * Demo that packs the sample collection into a {@code SequenceFile} of Pig Tuples. The key in each
+ * record is a {@link LongWritable} indicating the record count (sequential numbering). The value in
+ * each record is a Pig Tuple with a single field containing the text of the line. Designed to work
+ * with {@link DemoWordCountTuple1}.
+ *
+ * @author Jimmy Lin
  */
 public class DemoPackTuples1 {
-	private static final Logger sLogger = Logger.getLogger(DemoPackTuples1.class);
+  private static final Logger LOG = Logger.getLogger(DemoPackTuples1.class);
 
-	private DemoPackTuples1() {
-	}
+  private static final LongWritable LONG = new LongWritable();
+  private static final TupleFactory TUPLE_FACTORY = TupleFactory.getInstance();
 
-	// define the tuple schema for the input record
-	private static final Schema RECORD_SCHEMA = new Schema();
-	static {
-		RECORD_SCHEMA.addField("text", String.class, "");
-	}
+  private DemoPackTuples1() {}
 
-	// instantiate a single tuple
-	private static Tuple tuple = RECORD_SCHEMA.instantiate();
+  /**
+   * Runs the demo.
+   */
+  public static void main(String[] args) throws IOException {
+    if (args.length != 2) {
+      System.out.println("usage: [input] [output]");
+      System.exit(-1);
+    }
 
-	/**
-	 * Runs the demo.
-	 */
-	public static void main(String[] args) throws IOException {
-		if (args.length != 2) {
-			System.out.println("usage: [input] [output]");
-			System.exit(-1);
-		}
+    String infile = args[0];
+    String outfile = args[1];
 
-		String infile = args[0];
-		String outfile = args[1];
+    LOG.info("input: " + infile);
+    LOG.info("output: " + outfile);
 
-		sLogger.info("input: " + infile);
-		sLogger.info("output: " + outfile);
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.get(conf);
+    SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
+        LongWritable.class, BinSedesTuple.class);
 
-		Configuration conf = new Configuration();
-		FileSystem fs = FileSystem.get(conf);
-		SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, new Path(outfile),
-				LongWritable.class, Tuple.class);
+    BufferedReader data = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
 
-		// read in raw text records, line separated
-		BufferedReader data = new BufferedReader(new InputStreamReader(new FileInputStream(infile)));
+    long cnt = 0;
+    String line;
+    while ((line = data.readLine()) != null) {
+      LONG.set(cnt);
+      writer.append(LONG, TUPLE_FACTORY.newTuple(line));
 
-		// the key
-		LongWritable l = new LongWritable();
-		long cnt = 0;
+      cnt++;
+    }
 
-		String line;
-		while ((line = data.readLine()) != null) {
-			// write the record
-			tuple.set(0, line);
-			l.set(cnt);
-			writer.append(l, tuple);
+    data.close();
+    writer.close();
 
-			cnt++;
-		}
-
-		data.close();
-		writer.close();
-
-		sLogger.info("Wrote " + cnt + " records.");
-	}
+    LOG.info("Wrote " + cnt + " records.");
+  }
 }
