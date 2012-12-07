@@ -30,16 +30,12 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs; 
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.RawComparator;
 import org.apache.hadoop.io.WritableComparator;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -57,26 +53,23 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
  * <p>
  * Relational Join demo. This Hadoop Tool reads {@link Tuple} objects from two separate 
  * SequenceFile and joins them based on key. Both datasets can have multiple records with
- * the same join key, i.e. many-to-many join.
+ * the same join key, i.e. for many-to-many join.
  * This tool takes the following command-line arguments:
  * </p>
  * 
  * <ul>
- * <li>[input-path1] input dataset one path</li>
- * <li>[input-path1] input dataset two path</li>
+ * <li>[input-path1] input dataset one file/folder path</li>
+ * <li>[input-path2] input dataset two file/folder path</li>
  * <li>[output-path] output path</li>
  * <li>[num-reducers] number of reducers</li>
- * <li>Optional: -RC - flag to set RawComparator</li>
  * </ul>
  * 
  * <p>
  * Two flat text datasets are packed into two SequenceFiles with
  * {@link DemoPackTuples} respectively; each row in the input SequenceFile 
- * will have a join key field and a tuple field. The input tuple will have 
- * a unique id column and a text array column. The tuple Output will have a 
- * single combined text array column consisting of text array columns from 
- * both datasets joined based on the join key. The output SequenceFile can 
- * be converted into text file using {@link DemoUnpackTuples}
+ * will have a join key field and a tuple value field. The tuple Output will have  
+ * combined fields from both dataset joined based on the join key. The output SequenceFile
+ * can be converted into text file using {@link DemoUnpackTuples}
  * </p>
  * 
  * @see DemoPackTuples
@@ -86,8 +79,8 @@ import edu.umd.cloud9.io.pair.PairOfLongInt;
  */
 
 
-public class DemoReduceSideJoinPig extends Configured implements Tool {
-	private static Logger sLogger = Logger.getLogger(DemoReduceSideJoinPig.class);
+public class DemoReduceSideJoin extends Configured implements Tool {
+	private static Logger sLogger = Logger.getLogger(DemoReduceSideJoin.class);
 	
   //instantiate a tuple factory for creating tuples
   private static final TupleFactory TUPLE_FACTORY = TupleFactory.getInstance();
@@ -135,28 +128,18 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 	
 	//Reduce class joins the datasets based on the join key. 
 	private static class JoinReduceClass extends Reducer
-			<PairOfLongInt, BinSedesTuple, BinSedesTuple, NullWritable> {
+			<PairOfLongInt, BinSedesTuple, LongWritable, BinSedesTuple> {
 		
 		//Statically define tupleOut for object reuse
 		private static Tuple tupleOut;
+		private static LongWritable lw = new LongWritable();
 
 		
 		//Buffer for storing the rows from dataset one with a the current join key
-		private List setOneBuffer = new ArrayList<Tuple>();
+		private List<BinSedesTuple> setOneBuffer = new ArrayList<BinSedesTuple>();
 		
-		private long oldJoinKey = 0;
-		private long currJoinKey;
-		
-		/*// method to clone a ArrayListWritable of type Text
-		private ArrayListWritable<Text> copyArrayList(ArrayListWritable<Text> list) {
-			ArrayListWritable<Text> newList = new ArrayListWritable<Text>();
-			int listSize = list.size();
-			for(int i = 0; i < listSize; i++) {
-				Text token = new Text(((Text)list.get(i)).toString());
-				newList.add(token);
-			}
-			return newList;
-		}*/
+		private long oldJoinKey = -1;
+		private long currJoinKey = -1;
 		
 		@Override
 		public void reduce(PairOfLongInt keyPair, Iterable<BinSedesTuple> tuples, Context context) 
@@ -164,14 +147,14 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 			Iterator<BinSedesTuple> iter = tuples.iterator();
 			
 			//Array to store the combined columns to the two datasets
-			List combinedFields; 
+			List<Object> combinedFields; 
 			BinSedesTuple tupleIn;
 			currJoinKey = keyPair.getLeftElement();
 			
 			//Reset the dataset one buffer when a new join key is encountered
 			if(oldJoinKey != currJoinKey) {
 				oldJoinKey = currJoinKey;
-				setOneBuffer = new ArrayList<BinSedesTuple>();
+				setOneBuffer.clear();
 			}
 			
 			while(iter.hasNext()) {
@@ -180,7 +163,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 				
 				if(keyPair.getRightElement() == 0) {
 					//If the tuple belongs to dataset one, add it to buffer
-					setOneBuffer.add(TUPLE_FACTORY.newTuple(tupleIn.getAll()));
+					setOneBuffer.add((BinSedesTuple)TUPLE_FACTORY.newTuple(tupleIn.getAll()));
 				} else {
 					//If the tuple belongs to dataset two, join it with the
 					//corresponding rows from dataset one with same join key
@@ -195,9 +178,10 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 							
 							//Set the combined tokens to the output tuple
 							tupleOut = TUPLE_FACTORY.newTuple(combinedFields);
-							
+							lw.set(currJoinKey);
+
 							//Emit the combined tokens as the key, and null as value
-							context.write((BinSedesTuple) tupleOut, NullWritable.get());
+							context.write(lw, (BinSedesTuple) tupleOut);
 						}
 					}
 				}
@@ -214,6 +198,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		}
 	}
 	
+	//This is redundant as the PairOfLongInt already supports unserialized comparison.
 	public static class PairOfLongIntComparator extends WritableComparator {
 	  protected PairOfLongIntComparator() {
 	    super(PairOfLongInt.class);
@@ -248,19 +233,19 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 	}
 
 	
-	public DemoReduceSideJoinPig() {
+	public DemoReduceSideJoin() {
 	}
 	
-	private static int printUsage() {
-    System.out.println("usage: [input-path1] [input-path2] [output-path] [num-reducers]");
-    System.out.println("usage (withRawComparator): [input-path1] [input-path2] [output-path] [num-reducers] -RC");
-		ToolRunner.printGenericCommandUsage(System.out);
-		return -1;
+	private void usage() {
+    System.out.println("usage: [input-path1] [input-path2] [output-path] " +
+    		"[num-reducers]");
+    System.out.println("Use the smaller of the two datasets as input one.");
+    ToolRunner.printGenericCommandUsage(System.out);
 	}
 	
 	public int run(String[] args) throws Exception {
-		if (args.length != 4 && args.length != 5) {
-			printUsage();
+		if (args.length != 4) {
+			usage();
 			return -1;
 		}
 
@@ -268,49 +253,35 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 		String inputPath2 = args[1];
 		String outputPath = args[2];
 		int numReduceTasks = Integer.parseInt(args[3]);
-		boolean rawComparatorMode = false;
-		if(args.length == 5 && args[4].equals("-RC")) {
-		  rawComparatorMode = true;
-		}
 
-		sLogger.info("Tool: DemoReduceSideJoinPig");
+		sLogger.info("Tool: DemoReduceSideJoin");
 		sLogger.info(" - input path1: " + inputPath1);
 		sLogger.info(" - input path2: " + inputPath2);
 		sLogger.info(" - output path: " + outputPath);
 		sLogger.info(" - number of reducers: " + numReduceTasks);
 
 		Configuration conf = getConf();
-		Job job = new Job(conf, "DemoReduceSideJoinPig");
-		job.setJarByClass(DemoReduceSideJoinPig.class);
+    Job job = new Job(conf, "DemoReduceSideJoin");
+		job.setJarByClass(DemoReduceSideJoin.class);
 		job.setNumReduceTasks(numReduceTasks);
-
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+    job.setOutputKeyClass(LongWritable.class);
+    job.setOutputValueClass(BinSedesTuple.class);
+    job.setMapOutputKeyClass(PairOfLongInt.class);
+    job.setMapOutputValueClass(BinSedesTuple.class);
+    job.setReducerClass(JoinReduceClass.class);
+    job.setPartitionerClass(JoinPartitionClass.class);
+    
 		Path setOnePath = new Path(inputPath1);
 		Path setTwoPath = new Path(inputPath2);
 		Path outputDir = new Path(outputPath);
-
-		MultipleInputs.addInputPath(job, setOnePath, SequenceFileInputFormat.class, SetOneMapClass.class);
-		MultipleInputs.addInputPath(job, setTwoPath, SequenceFileInputFormat.class, SetTwoMapClass.class);
+		
+    //Add input one files to job
+    MultipleInputs.addInputPath(job, setOnePath, SequenceFileInputFormat.class, SetOneMapClass.class);
+    MultipleInputs.addInputPath(job, setTwoPath, SequenceFileInputFormat.class, SetTwoMapClass.class);
+    		
 		FileOutputFormat.setOutputPath(job, outputDir);
 		
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
-
-		job.setOutputKeyClass(BinSedesTuple.class);
-		job.setOutputValueClass(NullWritable.class);
-		
-		job.setMapOutputKeyClass(PairOfLongInt.class);
-		job.setMapOutputValueClass(BinSedesTuple.class);
-
-		job.setReducerClass(JoinReduceClass.class);
-		
-		job.setPartitionerClass(JoinPartitionClass.class);
-		
-		if(rawComparatorMode) {
-		  job.setSortComparatorClass(PairOfLongIntComparator.class);
-		  sLogger.info("Raw Comparator mode enabled!");
-		}
-		// Delete the output directory if it exists already
-		FileSystem.get(conf).delete(outputDir, true);
-
 		long startTime = System.currentTimeMillis();
 		job.waitForCompletion(true);
 		sLogger.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0
@@ -320,7 +291,7 @@ public class DemoReduceSideJoinPig extends Configured implements Tool {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new Configuration(), new DemoReduceSideJoinPig(), args);
+		int res = ToolRunner.run(new Configuration(), new DemoReduceSideJoin(), args);
 		System.exit(res);
 	}
 	
