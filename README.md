@@ -11,4 +11,5 @@ There are four Relational Join Techniques explained in Professor Lin’s book:
 - Memory Backed Joins – Efficient when one of the datasets completely fits into the memory of the nodes in the cluster.
 - Memcached Joins – A novel approach for holding one of datasets in-memory on a distributed store when the dataset is too big to fit into the memory of a single node.
 
-These techniques have advantages and disadvantages over each other, and they cater different application needs.
+These techniques have advantages and disadvantages over each other, and they cater different application needs. This module implements Reduce-Side Join and Map-side Join techniques. Full documentation available at: [http://mohideen.github.com/Cloud9/](http://mohideen.github.com/Cloud9/)
+
