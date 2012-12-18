@@ -429,3 +429,18 @@ Small Device Styles
   }
 
 }
+
+/************************************************************************
+My Custom Styles
+************************************************************************/
+.button_link {
+    padding: 10px 15px;
+    background: #595959;
+    color: #FFFFFF;
+}
+
+a.button_link:hover {
+    padding: 10px 15px;
+    background: #0076DC;
+    color: #FFFFFF !important;
+}

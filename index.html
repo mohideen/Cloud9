@@ -18,9 +18,10 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/mohideen/Cloud9">View on GitHub</a>
 
-          <h1 id="project_title">Relational Joins for Cloud9</h1>
-          <h2 id="project_tagline">Cloud9 is a MapReduce library for Hadoop developed at the University of Maryland</h2>
-
+          <a href="index.html">
+            <h1 id="project_title">Relational Joins for Cloud9</h1>
+            <h2 id="project_tagline">Cloud9 is a MapReduce library for Hadoop developed at the University of Maryland</h2>
+          </a>
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/mohideen/Cloud9/zipball/master">Download this project as a .zip file</a>
               <a class="tar_download_link" href="https://github.com/mohideen/Cloud9/tarball/master">Download this project as a tar.gz file</a>
@@ -47,15 +48,25 @@
         </ul>
         <p>These techniques have advantages and disadvantages over each other, and they cater different application needs. This module implements Reduce-Side Join and Map-side Join techniques.</p>
 
-        <p><strong>See</strong></p>
+        <details>
+            <summary>List of developed programs</summary>
+            Package: edu.umd.cloud9.example.join
+            <ul>
+                <li>DemoPackTuples: This helper tool will pack text dataset into SequenceFile with tuples.</li>
+                <li>DemoReduceSideJoin: This tool demonstrates the reduce-side join technique.</li>
+                <li>SortPartitionSequenceFile: This help function will sort and partition dataset for map-side joining.</li>
+                <li>DemoMapSideJoin: This tool demonstrates the map-side join technique.</li>
+                <li>DemoUnpackTuples: This helper tool will unpack tuples from SequenceFile to string based flat text file.</li>
+            </ul>
+        </details>
+       <p><strong>See</strong></p>
           <ul>
-              <li><a href="datageneration.html">Test Data Generation</a></li>
-          
-      
-        <li>
-          Poster presented @ <a href="http://ischool.umd.edu/news/come-ischools-experiential-learning-expo-dec-5" target="_blank"> iSchool's Experiential Learning Expo</a>
-          <a href="files/poster.pdf" target="_blank"><img src="files/poster.jpg" width="400px" /></a>
-        </li>
+            <li><a href="datageneration.html">Test Data Generation</a></li>
+              <li><a href="logcollection.html">Job log collection and processing</a></li>
+            <li>
+              Poster presented @ <a href="http://ischool.umd.edu/news/come-ischools-experiential-learning-expo-dec-5" target="_blank"> iSchool's Experiential Learning Expo</a>
+              <a href="files/poster.pdf" target="_blank"><img src="images/poster.jpg" width="400px" /></a>
+            </li>
           </ul>
       
       </section>

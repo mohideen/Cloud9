@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Relational Joins for Cloud9 : Cloud9 is a MapReduce library for Hadoop developed at the University of Maryland" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Relational Joins for Cloud9</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mohideen/Cloud9">View on GitHub</a>
+
+          <a href="index.html">
+            <h1 id="project_title">Relational Joins for Cloud9</h1>
+            <h2 id="project_tagline">Cloud9 is a MapReduce library for Hadoop developed at the University of Maryland</h2>
+          </a>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mohideen/Cloud9/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mohideen/Cloud9/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        
+        <p><strong>Collecting the job logs</strong></p>
+
+        <p>The Cloudera jobtracker shows the status of jobs, and individual tasks in HTML format. Storing the HTML job details manually will be a tedious task. Each task in the job will have a separate HTML page containing the counters used by the task. The counters will provide useful information for performance analysis. To simplify the logging process the below shell scripts can be used.</p>
+        <ul>
+          <li><a href="files/map-logger.sh">Script that stores job log, map & reduce tasks overview, and individual map task counters.</a></li>
+          <li><a href="files/reduce-logger.sh">Script that stores job log, map & reduce tasks overview, and individual reduce task counters.</a></li>
+        </ul>
+   
+
+        <p><strong>Processing the log file in the job output directory</strong></p>
+        <p>
+          The log file in the job output directory is obscure, and cannot be easy analyzed. A python script that generates the timeline of the tasks in the job can be used to create elegant charts (see image below). The smith college CS department’s <a href="http://cs.smith.edu/dftwiki/index.php/Hadoop_Tutorial_1.1_--_Generating_Task_Timelines" target="_blank">Hadoop tutorial page</a> has information for downloading and running the python script.
+          <img src="images/chart.jpg" />
+        </p>
+
+        <p><a href="javascript:history.go(-1);" class="button_link">Go Back</a></p>
+        
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Relational Joins for Cloud9 maintained by <a href="https://github.com/mohideen">mohideen</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
