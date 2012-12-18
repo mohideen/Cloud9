@@ -33,18 +33,31 @@
       <section id="main_content" class="inner">
         <p>Cloud9lib is a project developed at University of Maryland to assist students and researchers in Data-Intensive text processing applications. Cloud9lib has various modules that illustrate different MapReduce algorithms that are explained in the “Data-Intensive Text Processing with MapReduce” book by Professor Jimmy Lin and Chris Dyer. Currently, this library doesn’t have examples for every the important concepts in the book. I would add a module to this library to demonstrate the relational join techniques explained in the book. </p>
 
-<p><strong>Relational Join Module</strong></p>
+        <p><strong>Relational Join Module</strong></p>
 
-<p>Relational Joins are operations performed to combine different data structures together and gain meaning information from them. Relational Joins are essential for any data warehousing application. When the data to be processed becomes huge or the data to be processed is not fully structured, the traditional methods are not always efficient. Hadoop framework allows us to design algorithms that will run on both structured and unstructured data even in the petabyte scale.</p>
+        <p>Relational Joins are operations performed to combine different data structures together and gain meaning information from them. Relational Joins are essential for any data warehousing application. When the data to be processed becomes huge or the data to be processed is not fully structured, the traditional methods are not always efficient. Hadoop framework allows us to design algorithms that will run on both structured and unstructured data even in the petabyte scale.</p>
 
-<p>There are four Relational Join Techniques explained in Professor Lin’s book: </p>
+        <p>There are four Relational Join Techniques explained in Professor Lin’s book: </p>
 
-<ul>
-<li>Reduce-Side Joins – Caters applications with unorganized data. Less efficient.</li>
-<li>Map-side Joins – Efficient technique but requires sorted input data.</li>
-<li>Memory Backed Joins – Efficient when one of the datasets completely fits into the memory of the nodes in the cluster.</li>
-<li>Memcached Joins – A novel approach for holding one of datasets in-memory on a distributed store when the dataset is too big to fit into the memory of a single node.</li>
-</ul><p>These techniques have advantages and disadvantages over each other, and they cater different application needs. This module implements Reduce-Side Join and Map-side Join techniques.</p>
+        <ul>
+        <li>Reduce-Side Joins – Caters applications with unorganized data. Less efficient.</li>
+        <li>Map-side Joins – Efficient technique but requires sorted input data.</li>
+        <li>Memory Backed Joins – Efficient when one of the datasets completely fits into the memory of the nodes in the cluster.</li>
+        <li>Memcached Joins – A novel approach for holding one of datasets in-memory on a distributed store when the dataset is too big to fit into the memory of a single node.</li>
+        </ul>
+        <p>These techniques have advantages and disadvantages over each other, and they cater different application needs. This module implements Reduce-Side Join and Map-side Join techniques.</p>
+
+        <p><strong>See</strong></p>
+          <ul>
+              <li><a href="datageneration.html">Test Data Generation</a></li>
+          
+      
+        <li>
+          Poster presented @ <a href="http://ischool.umd.edu/news/come-ischools-experiential-learning-expo-dec-5" target="_blank"> iSchool's Experiential Learning Expo</a>
+          <a href="files/poster.pdf" target="_blank"><img src="files/poster.jpg" width="400px" /></a>
+        </li>
+          </ul>
+      
       </section>
     </div>
 
